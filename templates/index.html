@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Diabetes Prediction</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap");
+
+      :root {
+        --bg: #f4f1ea;
+        --ink: #1b1f2a;
+        --muted: #5a616b;
+        --accent: #0f6a57;
+        --accent-2: #e68b2c;
+        --card: #ffffff;
+        --line: #e3ddd1;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Source Sans 3", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: radial-gradient(circle at top, #fff5dd, var(--bg));
+      }
+
+      .backdrop {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .backdrop::before,
+      .backdrop::after {
+        content: "";
+        position: absolute;
+        width: 420px;
+        height: 420px;
+        border-radius: 50%;
+        background: rgba(15, 106, 87, 0.12);
+        filter: blur(10px);
+        animation: float 12s ease-in-out infinite;
+      }
+
+      .backdrop::before {
+        top: -80px;
+        right: -120px;
+      }
+
+      .backdrop::after {
+        bottom: -140px;
+        left: -120px;
+        background: rgba(230, 139, 44, 0.16);
+        animation-delay: 2s;
+      }
+
+      .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 22px 8vw 8px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: #f6efe2;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+      }
+
+      .brand-name {
+        font-family: "Playfair Display", serif;
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .brand-tag {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        border: 1px solid var(--line);
+        background: #fffaf1;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .shell {
+        padding: 16px 8vw 64px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 28px;
+        align-items: center;
+        margin-top: 16px;
+      }
+
+      .hero-copy h1 {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(32px, 4vw, 52px);
+        margin: 0 0 12px;
+        animation: rise 0.6s ease-out both;
+      }
+
+      .hero-copy p {
+        margin: 0 0 20px;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.6;
+        animation: rise 0.7s ease-out both;
+      }
+
+      .badge-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        animation: rise 0.8s ease-out both;
+      }
+
+      .badge {
+        padding: 8px 14px;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid var(--line);
+        font-size: 13px;
+      }
+
+      .hero-visual {
+        display: grid;
+        gap: 18px;
+      }
+
+      .visual-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 18px;
+        box-shadow: 0 18px 40px rgba(23, 25, 30, 0.08);
+        animation: float 10s ease-in-out infinite;
+      }
+
+      .form-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 26px;
+        box-shadow: 0 20px 50px rgba(23, 25, 30, 0.08);
+      }
+
+      .form-card h2 {
+        margin: 0 0 12px;
+        font-size: 22px;
+      }
+
+      .form-card p {
+        margin: 0 0 18px;
+        color: var(--muted);
+      }
+
+      form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 8px;
+        color: var(--muted);
+      }
+
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #d6cfbf;
+        border-radius: 10px;
+        font-size: 15px;
+        background: #fffaf1;
+      }
+
+      .error {
+        color: #b42318;
+        font-size: 12px;
+        margin-top: 6px;
+      }
+
+      .actions {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 8px;
+      }
+
+      button {
+        padding: 12px 20px;
+        border: none;
+        background: var(--accent);
+        color: white;
+        border-radius: 999px;
+        font-size: 15px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(15, 106, 87, 0.2);
+      }
+
+      .info-grid {
+        margin-top: 32px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+
+      .info-card {
+        background: #ffffff;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 18px;
+      }
+
+      .info-card h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+
+      .info-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .site-footer {
+        padding: 24px 8vw 40px;
+        color: var(--muted);
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="backdrop"></div>
+    <header class="site-header">
+      <div class="brand">
+        <div class="logo">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="13" cy="13" r="10" stroke="#0f6a57" stroke-width="2" />
+            <path d="M13 6V20" stroke="#0f6a57" stroke-width="2" stroke-linecap="round" />
+            <path d="M7 13H19" stroke="#0f6a57" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">GlucoPath</div>
+          <div class="brand-tag">Diabetes risk check</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="pill">Model: SVM</span>
+        <span class="pill">Dataset: PIMA</span>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>Predict diabetes risk with a clear, simple intake.</h1>
+          <p>
+            Enter the eight clinical parameters below. The model will standardize the
+            inputs and return a clear result along with helpful guidance.
+          </p>
+          <div class="badge-row">
+            <span class="badge">Fast input</span>
+            <span class="badge">Private local run</span>
+            <span class="badge">Instant result</span>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="visual-card">
+            <svg viewBox="0 0 380 180" width="100%" height="180" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0" y="0" width="380" height="180" rx="18" fill="#fff6e7" />
+              <circle cx="65" cy="60" r="28" fill="#0f6a57" opacity="0.2" />
+              <circle cx="110" cy="60" r="20" fill="#0f6a57" opacity="0.4" />
+              <path d="M45 118C70 98 95 96 120 110" stroke="#0f6a57" stroke-width="4" fill="none" stroke-linecap="round" />
+              <rect x="170" y="40" width="170" height="100" rx="14" fill="#ffffff" stroke="#e3ddd1" />
+              <path d="M190 90H320" stroke="#e68b2c" stroke-width="6" stroke-linecap="round" />
+              <path d="M190 65H290" stroke="#0f6a57" stroke-width="6" stroke-linecap="round" />
+              <path d="M190 115H260" stroke="#1b1f2a" stroke-width="6" stroke-linecap="round" opacity="0.6" />
+              <text x="185" y="35" font-size="12" fill="#5a616b">Vitals overview</text>
+            </svg>
+          </div>
+          <div class="form-card">
+            <h2>Patient inputs</h2>
+            <p>All values are numeric. Use the same units as the dataset.</p>
+            <form method="post">
+              {% for field in [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI",
+                "DiabetesPedigreeFunction",
+                "Age"
+              ] %}
+              <div>
+                <label for="{{ field }}">{{ field }}</label>
+                <input
+                  id="{{ field }}"
+                  name="{{ field }}"
+                  type="number"
+                  step="any"
+                  value="{{ values.get(field, '') }}"
+                  required
+                >
+                {% if errors.get(field) %}
+                  <div class="error">{{ errors.get(field) }}</div>
+                {% endif %}
+              </div>
+              {% endfor %}
+              <div class="actions">
+                <button type="submit">Predict</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="info-grid">
+        <div class="info-card">
+          <h3>Standardized inputs</h3>
+          <p>The model scales all values before prediction for a fair comparison.</p>
+        </div>
+        <div class="info-card">
+          <h3>Clinically grounded</h3>
+          <p>Built on PIMA diabetes data with common clinical measures.</p>
+        </div>
+        <div class="info-card">
+          <h3>Local and private</h3>
+          <p>Your inputs stay on your machine when you run the app locally.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>GlucoPath is an educational tool. It does not provide medical advice.</span>
+      <span>Model: Linear SVM with standardization.</span>
+    </footer>
+  </body>
+</html>
